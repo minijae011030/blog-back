@@ -25,8 +25,14 @@ spring:
     serialization:
       fail-on-empty-beans: false  # (LAZY 객체 JSON 직렬화 오류 방지용)
 
+
+
 # 로깅 설정 (선택)
 logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  expiration: 3600000
