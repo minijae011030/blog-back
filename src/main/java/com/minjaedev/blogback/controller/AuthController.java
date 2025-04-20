@@ -2,9 +2,12 @@ package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.domain.User;
+import com.minjaedev.blogback.dto.LoginRequestDto;
 import com.minjaedev.blogback.dto.SignupRequestDto;
+import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.UserRepository;
 import com.minjaedev.blogback.service.UserService;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<?>> signup(@RequestBody SignupRequestDto reqeust) {
@@ -34,5 +38,25 @@ public class AuthController {
 
         userRepository.save(newUser);
         return ResponseEntity.ok(ApiResponse.of(200, "User registered successfully"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequestDto reqeust) {
+        User user = userRepository.findByEmail(reqeust.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.of(401, "Invalid email"));
+        }
+
+        if (!passwordEncoder.matches(reqeust.getPassword(), user.getPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponse.of(401, "Invalid password"));
+        }
+
+        String token = JwtProvider.TOKEN_PREFIX + jwtProvider.generateToken(user.getId());
+
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "login successful", token)
+        );
     }
 }
