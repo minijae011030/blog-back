@@ -19,7 +19,7 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
-    @GetMapping("/me")
+    @GetMapping("/account")
     public ResponseEntity<ApiResponse<?>> getMyInfo(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         String token = jwtProvider.resolveToken(authHeader);
