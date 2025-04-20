@@ -6,8 +6,6 @@ import com.minjaedev.blogback.dto.LoginRequestDto;
 import com.minjaedev.blogback.dto.SignupRequestDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.UserRepository;
-import com.minjaedev.blogback.service.UserService;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

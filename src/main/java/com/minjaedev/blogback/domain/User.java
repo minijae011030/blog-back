@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.util.UUID;
-
 @Entity
 @Getter @Setter
 @NoArgsConstructor
@@ -13,8 +11,7 @@ import java.util.UUID;
 @Builder
 public class User {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "CHAR(36)")
     private String id;
 
@@ -23,7 +20,6 @@ public class User {
 
     @Column(unique = true)
     private String email;
-
 
     private String password;
     private String githubId;
