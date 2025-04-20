@@ -33,8 +33,8 @@ public class UserController {
         }
 
         String userId = jwtProvider.getUserIdFromToken(token);
-        UUID userID = UUID.fromString(userId);
-        User user = userRepository.findById(userID).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
+
 
         if (user == null) {
             return ResponseEntity
