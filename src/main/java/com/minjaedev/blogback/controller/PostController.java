@@ -39,7 +39,7 @@ public class PostController {
 
     @GetMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq) {
-        Post post = postRepository.findById(postSeq.toString()).orElse(null);
+        Post post = postRepository.findById(postSeq).orElse(null);
 
         if (post == null) {
             return ResponseEntity.status(404).body(
@@ -157,7 +157,7 @@ public class PostController {
                     ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
         }
 
-        Post post = postRepository.findById(postSeq.toString()).orElse(null);
+        Post post = postRepository.findById(postSeq).orElse(null);
         if (post == null || !post.getAuthor().getId().equals(userId)) {
             return ResponseEntity.status(403).body(ApiResponse.of(403, "수정 권한이 없습니다."));
 
@@ -192,5 +192,39 @@ public class PostController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(200, "게시글 수정 완료"));
+    }
+
+    @DeleteMapping("/{postSeq}")
+    public ResponseEntity<ApiResponse<?>> deletePost(
+            @PathVariable Long postSeq,
+            HttpServletRequest request
+    ) {
+        String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
+        if (token == null || !jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body(
+                    ApiResponse.of(401, "유효하지 않은 토큰입니다."));
+        }
+
+        String userId = jwtProvider.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
+        }
+
+        Post post = postRepository.findById(postSeq).orElse(null);
+        if (post == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "해당 게시글을 찾을 수 없습니다."));
+        }
+
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(
+                    ApiResponse.of(403, "삭제 권한이 없습니다."));
+        }
+
+        postRepository.delete(post);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 삭제 완료"));
     }
 }

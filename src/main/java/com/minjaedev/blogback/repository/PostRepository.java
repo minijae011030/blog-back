@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, String> {
+public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findByPostSeq(Long postSeq);
     Page<Post> findAllByAuthor(User author, Pageable pageable);
     Page<Post> findAllByAuthorAndCategory(User author, Category category, Pageable pageable);
