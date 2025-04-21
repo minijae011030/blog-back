@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -55,7 +54,9 @@ public class PostController {
     public ResponseEntity<ApiResponse<?>> getPosts(
             @RequestHeader String blogId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String tag) {
         User user = userRepository.findByBlogId(blogId).orElse(null);
         if (user == null) {
             return ResponseEntity.status(404).body(
@@ -64,6 +65,20 @@ public class PostController {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findAllByAuthor(user, pageable);
+
+        if (category != null) {
+            Category categoryEntity = categoryRepository.findByNameAndUser(category, user).orElse(null);
+            if (categoryEntity == null) {
+                return ResponseEntity.status(404).body(
+                        ApiResponse.of(404, "해당 카테고리를 찾을 수 없습니다."));
+            }
+            postPage = postRepository.findAllByAuthorAndCategory(user, categoryEntity, pageable);
+        } else if (tag != null) {
+            postPage = postRepository.findAllByAuthorAndTags_Name(user, tag, pageable);
+        } else {
+            postPage = postRepository.findAllByAuthor(user, pageable);
+        }
+
 
         List<PostResponseDto> postDtos = postPage.getContent().stream()
                 .map(PostResponseDto::new)

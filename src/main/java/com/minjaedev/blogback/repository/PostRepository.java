@@ -1,5 +1,6 @@
 package com.minjaedev.blogback.repository;
 
+import com.minjaedev.blogback.domain.Category;
 import com.minjaedev.blogback.domain.Post;
 import com.minjaedev.blogback.domain.User;
 import org.springframework.data.domain.Page;
@@ -13,4 +14,6 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, String> {
     Optional<Post> findByPostSeq(Long postSeq);
     Page<Post> findAllByAuthor(User author, Pageable pageable);
+    Page<Post> findAllByAuthorAndCategory(User author, Category category, Pageable pageable);
+    Page<Post> findAllByAuthorAndTags_Name(User author, String tagName, Pageable pageable);
 }
