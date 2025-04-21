@@ -49,7 +49,7 @@ public class PostController {
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getPosts(
             @RequestHeader String blogId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size) {
         User user = userRepository.findByBlogId(blogId).orElse(null);
         if (user == null) {
@@ -57,7 +57,7 @@ public class PostController {
                     ApiResponse.of(404, "존재하지 않는 회원입니다."));
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage = postRepository.findAllByAuthor(user, pageable);
 
         List<PostResponseDto> postDtos = postPage.getContent().stream()
