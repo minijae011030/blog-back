@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -15,8 +14,8 @@ import java.util.UUID;
 @Builder
 public class Post {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long postSeq;
 
     @Column(nullable = false)
     private String title;
@@ -29,6 +28,7 @@ public class Post {
     private String category;
 
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

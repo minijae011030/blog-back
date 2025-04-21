@@ -1,0 +1,53 @@
+package com.minjaedev.blogback.controller;
+
+import com.minjaedev.blogback.common.ApiResponse;
+import com.minjaedev.blogback.domain.Post;
+import com.minjaedev.blogback.domain.User;
+import com.minjaedev.blogback.dto.PostCreateResponseDto;
+import com.minjaedev.blogback.dto.PostRequestDto;
+import com.minjaedev.blogback.jwt.JwtProvider;
+import com.minjaedev.blogback.repository.PostRepository;
+import com.minjaedev.blogback.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+
+@RestController
+@RequestMapping("/post")
+@RequiredArgsConstructor
+public class PostController {
+    private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<?>> createPost(@RequestBody PostRequestDto requestDto, HttpServletRequest request) {
+        String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
+        if (token == null || !jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body(ApiResponse.of(401, "유효하지 않은 토큰입니다."));
+        }
+
+        String userId = jwtProvider.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
+        }
+
+        Post newPost = Post.builder()
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .category(requestDto.getCategory())
+                .createdAt(LocalDateTime.now())
+                .author(user)
+                .build();
+
+        postRepository.save(newPost);
+        return ResponseEntity.ok(ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(newPost.getPostSeq())));
+    }
+}
