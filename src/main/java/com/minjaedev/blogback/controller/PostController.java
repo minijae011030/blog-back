@@ -227,4 +227,32 @@ public class PostController {
         return ResponseEntity.ok(
                 ApiResponse.of(200, "게시글 삭제 완료"));
     }
+
+    @PostMapping("/{postSeq}/pin")
+    public ResponseEntity<ApiResponse<?>> pinPost(@PathVariable Long postSeq) {
+        Post post = postRepository.findById(postSeq).orElse(null);
+        if (post == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "게시글을 찾을 수 없습니다."));
+        }
+
+        post.setPinned(true);
+        postRepository.save(post);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 고정 완료"));
+    }
+
+    @PostMapping("/{postSeq}/unpin")
+    public ResponseEntity<ApiResponse<?>> unpinPost(@PathVariable Long postSeq) {
+        Post post = postRepository.findById(postSeq).orElse(null);
+        if (post == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "게시글을 찾을 수 없습니다."));
+        }
+
+        post.setPinned(false);
+        postRepository.save(post);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 고정 해제 완료"));
+    }
 }
