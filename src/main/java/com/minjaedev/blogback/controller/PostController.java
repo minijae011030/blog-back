@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 @RestController
 @RequestMapping("/post")
 @RequiredArgsConstructor
@@ -52,11 +50,14 @@ public class PostController {
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .category(requestDto.getCategory())
-                .createdAt(LocalDateTime.now())
                 .author(user)
                 .build();
 
-        postRepository.save(newPost);
-        return ResponseEntity.ok(ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(newPost.getPostSeq())));
+        Post savedPost = postRepository.save(newPost);
+
+        savedPost.setTags(requestDto.getTags());
+        postRepository.save(savedPost);
+
+        return ResponseEntity.ok(ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(savedPost.getPostSeq())));
     }
 }

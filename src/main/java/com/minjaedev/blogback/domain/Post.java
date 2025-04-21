@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,7 +24,9 @@ public class Post {
     private LocalDateTime createdAt;
 
     @ElementCollection
-    private List<String> tags;
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_seq"))
+    @Column(name = "tag")
+    private List<String> tags = new ArrayList<>(); // 초기화 꼭 해줘야 안전!
 
     private String category;
 
@@ -39,5 +42,4 @@ public class Post {
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
 }
