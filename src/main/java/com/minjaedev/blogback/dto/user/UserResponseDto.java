@@ -22,4 +22,8 @@ public class UserResponseDto {
         this.intro = user.getIntro();
         this.profileImage = user.getProfileImage();
     }
+
+    public static UserResponseDto of(User user) {
+        return new UserResponseDto(user);
+    }
 }
