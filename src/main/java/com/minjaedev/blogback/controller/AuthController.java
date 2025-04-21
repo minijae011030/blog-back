@@ -32,6 +32,7 @@ public class AuthController {
                 .name(reqeust.getName())
                 .email(reqeust.getEmail())
                 .password(passwordEncoder.encode(reqeust.getPassword()))
+                .blogId(reqeust.getBlogId())
                 .build();
 
         userRepository.save(newUser);

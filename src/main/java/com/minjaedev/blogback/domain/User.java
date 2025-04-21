@@ -21,6 +21,9 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @Column(unique = true, nullable = false)
+    private String blogId;
+
     private String password;
     private String githubId;
     private String instagramId;
