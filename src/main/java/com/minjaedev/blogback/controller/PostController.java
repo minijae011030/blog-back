@@ -10,6 +10,7 @@ import com.minjaedev.blogback.dto.post.PostResponseDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.UserRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,38 +35,50 @@ public class PostController {
         Post post = postRepository.findById(postSeq.toString()).orElse(null);
 
         if (post == null) {
-            return ResponseEntity.status(404).body(ApiResponse.of(404, "해당 게시글을 찾을 수 없습니다."));
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "해당 게시글을 찾을 수 없습니다."));
         }
 
-        return ResponseEntity.ok(ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getPosts(
+            @RequestHeader String blogId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+        User user = userRepository.findByBlogId(blogId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "존재하지 않는 회원입니다."));
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Post> postPage = postRepository.findAll(pageable);
+        Page<Post> postPage = postRepository.findAllByAuthor(user, pageable);
 
         List<PostResponseDto> postDtos = postPage.getContent().stream()
                 .map(PostResponseDto::new)
                 .toList();
 
         PostListResponseDto response = new PostListResponseDto((int) postPage.getTotalElements(), postDtos);
-        return ResponseEntity.ok(ApiResponse.of(200, "게시글 목록 조회 성공", response));
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 목록 조회 성공", response));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createPost(@RequestBody PostRequestDto requestDto, HttpServletRequest request) {
         String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
         if (token == null || !jwtProvider.validateToken(token)) {
-            return ResponseEntity.status(401).body(ApiResponse.of(401, "유효하지 않은 토큰입니다."));
+            return ResponseEntity.status(401).body(
+                    ApiResponse.of(401, "유효하지 않은 토큰입니다."));
         }
 
         String userId = jwtProvider.getUserIdFromToken(token);
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(404).body(ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
         }
 
         Post newPost = Post.builder()
@@ -80,6 +93,7 @@ public class PostController {
         savedPost.setTags(requestDto.getTags());
         postRepository.save(savedPost);
 
-        return ResponseEntity.ok(ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(savedPost.getPostSeq())));
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(savedPost.getPostSeq())));
     }
 }
