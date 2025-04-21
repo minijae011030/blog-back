@@ -1,4 +1,4 @@
-package com.minjaedev.blogback.dto.category;
+package com.minjaedev.blogback.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

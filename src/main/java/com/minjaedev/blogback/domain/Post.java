@@ -23,10 +23,13 @@ public class Post {
 
     private LocalDateTime createdAt;
 
-    @ElementCollection
-    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_seq"))
-    @Column(name = "tag")
-    private List<String> tags = new ArrayList<>(); // 초기화 꼭 해줘야 안전!
+    @ManyToMany
+    @JoinTable(
+            name = "post_tag",
+            joinColumns = @JoinColumn(name = "post_seq"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

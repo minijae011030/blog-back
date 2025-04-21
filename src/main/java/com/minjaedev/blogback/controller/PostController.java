@@ -3,6 +3,7 @@ package com.minjaedev.blogback.controller;
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.domain.Category;
 import com.minjaedev.blogback.domain.Post;
+import com.minjaedev.blogback.domain.Tag;
 import com.minjaedev.blogback.domain.User;
 import com.minjaedev.blogback.dto.post.PostCreateResponseDto;
 import com.minjaedev.blogback.dto.post.PostListResponseDto;
@@ -11,6 +12,7 @@ import com.minjaedev.blogback.dto.post.PostResponseDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.CategoryRepository;
 import com.minjaedev.blogback.repository.PostRepository;
+import com.minjaedev.blogback.repository.TagRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -32,6 +36,7 @@ public class PostController {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
 
     @GetMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq) {
@@ -70,7 +75,10 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createPost(@RequestBody PostRequestDto requestDto, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<?>> createPost(
+            @RequestBody PostRequestDto requestDto,
+            HttpServletRequest request) {
+
         String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
         if (token == null || !jwtProvider.validateToken(token)) {
             return ResponseEntity.status(401).body(
@@ -86,25 +94,30 @@ public class PostController {
 
         String categoryName = requestDto.getCategory();
         Category category = categoryRepository.findByNameAndUser(categoryName, user)
-                .orElseGet(() -> {
-                    Category newCategory = Category.builder()
-                            .name(categoryName)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .name(categoryName)
+                        .user(user)
+                        .build()));
+
+        List<Tag> tagList = new ArrayList<>();
+        for (String tagName : requestDto.getTags()) {
+            Tag tag = tagRepository.findByNameAndUser(tagName, user)
+                    .orElseGet(() -> tagRepository.save(Tag.builder()
+                            .name(tagName)
                             .user(user)
-                            .build();
-                    return categoryRepository.save(newCategory);
-                });
+                            .build()));
+            tagList.add(tag);
+        }
 
         Post newPost = Post.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
-                .category(category)
                 .author(user)
+                .category(category)
+                .tags(tagList)
                 .build();
 
         Post savedPost = postRepository.save(newPost);
-
-        savedPost.setTags(requestDto.getTags());
-        postRepository.save(savedPost);
 
         return ResponseEntity.ok(
                 ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(savedPost.getPostSeq())));
