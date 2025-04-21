@@ -137,4 +137,60 @@ public class PostController {
         return ResponseEntity.ok(
                 ApiResponse.of(200, "게시글 작성 완료", new PostCreateResponseDto(savedPost.getPostSeq())));
     }
+
+    @PutMapping("/{postSeq}")
+    public ResponseEntity<ApiResponse<?>> updatePost(
+            @PathVariable Long postSeq,
+            @RequestBody PostRequestDto requestDto,
+            HttpServletRequest request
+    ) {
+        String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
+        if (token == null || !jwtProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body(
+                    ApiResponse.of(401, "유효하지 않은 토큰입니다."));
+        }
+
+        String userId = jwtProvider.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
+        }
+
+        Post post = postRepository.findById(postSeq.toString()).orElse(null);
+        if (post == null || !post.getAuthor().getId().equals(userId)) {
+            return ResponseEntity.status(403).body(ApiResponse.of(403, "수정 권한이 없습니다."));
+
+        }
+
+        // 카테고리 처리
+        String categoryName = requestDto.getCategory();
+        Category category = categoryRepository.findByNameAndUser(categoryName, user)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .name(categoryName)
+                        .user(user)
+                        .build()));
+
+        // 태그 처리
+        List<Tag> tagList = new ArrayList<>();
+        for (String tagName : requestDto.getTags()) {
+            Tag tag = tagRepository.findByNameAndUser(tagName, user)
+                    .orElseGet(() -> tagRepository.save(Tag.builder()
+                            .name(tagName)
+                            .user(user)
+                            .build()));
+            tagList.add(tag);
+        }
+
+        // 포스트 수정
+        post.setTitle(requestDto.getTitle());
+        post.setContent(requestDto.getContent());
+        post.setCategory(category);
+        post.setTags(tagList);
+
+        postRepository.save(post);
+
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "게시글 수정 완료"));
+    }
 }
