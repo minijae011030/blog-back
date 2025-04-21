@@ -89,6 +89,29 @@ public class PostController {
                 ApiResponse.of(200, "게시글 목록 조회 성공", response));
     }
 
+    @GetMapping("/pinned")
+    public ResponseEntity<ApiResponse<?>> getPinnedPosts(
+            @RequestHeader String blogId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        User user = userRepository.findByBlogId(blogId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "존재하지 않는 회원입니다."));
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> pinnedPage = postRepository.findByAuthorAndIsPinnedTrue(user, pageable);
+
+        List<PostResponseDto> postDtos = pinnedPage.getContent().stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        PostListResponseDto response = new PostListResponseDto((int) pinnedPage.getTotalElements(), postDtos);
+        return ResponseEntity.ok(ApiResponse.of(200, "고정 게시글 조회 성공", response));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createPost(
             @RequestBody PostRequestDto requestDto,
