@@ -7,6 +7,7 @@ import com.minjaedev.blogback.dto.user.CategoryResponseDto;
 import com.minjaedev.blogback.dto.user.TagResponseDto;
 import com.minjaedev.blogback.dto.user.UserResponseDto;
 import com.minjaedev.blogback.repository.CategoryRepository;
+import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.TagRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 
@@ -24,6 +25,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
+    private final PostRepository postRepository;
 
     @GetMapping("/account")
     public ResponseEntity<ApiResponse<?>> getMyInfo(
@@ -40,9 +42,7 @@ public class UserController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<ApiResponse<?>> getCategories(
-            @RequestHeader String blogId
-    ) {
+    public ResponseEntity<ApiResponse<?>> getCategories(@RequestHeader String blogId) {
         User user = userRepository.findByBlogId(blogId).orElse(null);
         if (user == null) {
             return ResponseEntity.status(404).body(
@@ -50,14 +50,13 @@ public class UserController {
         }
 
         List<Category> categories = categoryRepository.findAllByUser(user);
-        List<CategoryResponseDto> response = categories.stream()
-                .map(cat -> new CategoryResponseDto(cat.getCategoryId(), cat.getName()))
-                .toList();
+        List<CategoryResponseDto> result = categories.stream()
+                .map(category -> new CategoryResponseDto(
+                        category,
+                        postRepository.countByCategory(category)))
+                .collect(Collectors.toList());
 
-
-        return ResponseEntity.ok(
-                ApiResponse.of(200, "카테고리 조회 성공", response)
-        );
+        return ResponseEntity.ok(ApiResponse.of(200, "카테고리 조회 성공", result));
     }
 
     @GetMapping("/tags")
