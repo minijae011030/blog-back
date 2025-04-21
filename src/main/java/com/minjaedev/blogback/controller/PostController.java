@@ -4,6 +4,7 @@ import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.domain.Post;
 import com.minjaedev.blogback.domain.User;
 import com.minjaedev.blogback.dto.post.PostCreateResponseDto;
+import com.minjaedev.blogback.dto.post.PostListResponseDto;
 import com.minjaedev.blogback.dto.post.PostRequestDto;
 import com.minjaedev.blogback.dto.post.PostResponseDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
@@ -19,7 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.lang.Integer.parseInt;
 
 @RestController
 @RequestMapping("/post")
@@ -51,7 +53,8 @@ public class PostController {
                 .map(PostResponseDto::new)
                 .toList();
 
-        return ResponseEntity.ok(ApiResponse.of(200, "게시글 목록 조회 성공", postDtos));
+        PostListResponseDto response = new PostListResponseDto((int) postPage.getTotalElements(), postDtos);
+        return ResponseEntity.ok(ApiResponse.of(200, "게시글 목록 조회 성공", response));
     }
 
     @PostMapping
