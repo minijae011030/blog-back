@@ -28,7 +28,9 @@ public class Post {
     @Column(name = "tag")
     private List<String> tags = new ArrayList<>(); // 초기화 꼭 해줘야 안전!
 
-    private String category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private  Category category;
 
     @Lob
     @Column(columnDefinition = "TEXT")

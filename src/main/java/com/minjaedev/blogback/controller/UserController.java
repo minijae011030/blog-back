@@ -1,20 +1,25 @@
 package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
+import com.minjaedev.blogback.domain.Category;
 import com.minjaedev.blogback.domain.User;
+import com.minjaedev.blogback.dto.category.CategoryResponseDto;
 import com.minjaedev.blogback.dto.user.UserResponseDto;
+import com.minjaedev.blogback.repository.CategoryRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
     @GetMapping("/account")
     public ResponseEntity<ApiResponse<?>> getMyInfo(
@@ -27,6 +32,27 @@ public class UserController {
 
         return ResponseEntity.ok(
                 ApiResponse.of(200, "사용자 정보 조회 성공", new UserResponseDto(user))
+        );
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<ApiResponse<?>> getCategories(
+            @RequestHeader String blogId
+    ) {
+        User user = userRepository.findByBlogId(blogId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(404).body(
+                    ApiResponse.of(404, "존재하지 않는 블로그입니다."));
+        }
+
+        List<Category> categories = categoryRepository.findAllByUser(user);
+        List<CategoryResponseDto> response = categories.stream()
+                .map(cat -> new CategoryResponseDto(cat.getCategoryId(), cat.getName()))
+                .toList();
+
+
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "카테고리 조회 성공", response)
         );
     }
 }

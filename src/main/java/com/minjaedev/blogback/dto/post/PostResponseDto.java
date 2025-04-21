@@ -18,7 +18,7 @@ public class PostResponseDto {
     public PostResponseDto(Post post) {
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.category = post.getCategory();
+        this.category = post.getCategory().getName();
         this.tags = post.getTags();
         this.createdAt = post.getCreatedAt();
         this.authorName = post.getAuthor().getName();

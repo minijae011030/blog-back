@@ -1,6 +1,7 @@
 package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
+import com.minjaedev.blogback.domain.Category;
 import com.minjaedev.blogback.domain.Post;
 import com.minjaedev.blogback.domain.User;
 import com.minjaedev.blogback.dto.post.PostCreateResponseDto;
@@ -8,6 +9,7 @@ import com.minjaedev.blogback.dto.post.PostListResponseDto;
 import com.minjaedev.blogback.dto.post.PostRequestDto;
 import com.minjaedev.blogback.dto.post.PostResponseDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
+import com.minjaedev.blogback.repository.CategoryRepository;
 import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 
@@ -29,6 +31,7 @@ public class PostController {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final CategoryRepository categoryRepository;
 
     @GetMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq) {
@@ -81,10 +84,20 @@ public class PostController {
                     ApiResponse.of(404, "사용자를 찾을 수 없습니다."));
         }
 
+        String categoryName = requestDto.getCategory();
+        Category category = categoryRepository.findByNameAndUser(categoryName, user)
+                .orElseGet(() -> {
+                    Category newCategory = Category.builder()
+                            .name(categoryName)
+                            .user(user)
+                            .build();
+                    return categoryRepository.save(newCategory);
+                });
+
         Post newPost = Post.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
-                .category(requestDto.getCategory())
+                .category(category)
                 .author(user)
                 .build();
 
