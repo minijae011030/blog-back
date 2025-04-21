@@ -11,8 +11,15 @@ import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -31,6 +38,20 @@ public class PostController {
         }
 
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<?>> getPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        List<PostResponseDto> postDtos = postPage.getContent().stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.of(200, "게시글 목록 조회 성공", postDtos));
     }
 
     @PostMapping
