@@ -2,7 +2,7 @@ package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.domain.User;
-import com.minjaedev.blogback.dto.UserResponseDto;
+import com.minjaedev.blogback.dto.user.UserResponseDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;

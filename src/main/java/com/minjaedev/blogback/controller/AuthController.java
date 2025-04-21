@@ -2,8 +2,8 @@ package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.domain.User;
-import com.minjaedev.blogback.dto.LoginRequestDto;
-import com.minjaedev.blogback.dto.SignupRequestDto;
+import com.minjaedev.blogback.dto.auth.LoginRequestDto;
+import com.minjaedev.blogback.dto.auth.SignupRequestDto;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

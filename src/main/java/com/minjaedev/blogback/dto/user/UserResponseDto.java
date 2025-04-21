@@ -1,4 +1,4 @@
-package com.minjaedev.blogback.dto;
+package com.minjaedev.blogback.dto.user;
 
 import com.minjaedev.blogback.domain.User;
 import lombok.Getter;

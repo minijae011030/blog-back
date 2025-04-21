@@ -1,4 +1,4 @@
-package com.minjaedev.blogback.dto;
+package com.minjaedev.blogback.dto.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

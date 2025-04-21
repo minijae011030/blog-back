@@ -1,10 +1,11 @@
-package com.minjaedev.blogback.dto;
+package com.minjaedev.blogback.dto.auth;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class LoginRequestDto {
+public class SignupRequestDto {
     private String email;
     private String password;
+    private String name;
 }
