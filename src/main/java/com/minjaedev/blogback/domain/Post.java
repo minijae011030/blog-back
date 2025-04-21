@@ -43,6 +43,9 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User author;
 
+    @Column(nullable = false)
+    private boolean isPinned = false;
+
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();

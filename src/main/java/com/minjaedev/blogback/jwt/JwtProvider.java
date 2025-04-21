@@ -20,11 +20,6 @@ public class JwtProvider {
     @Getter
     public static final String TOKEN_PREFIX = "Bearer ";
 
-    @PostConstruct
-    public void init() {
-        System.out.println("🔐 Loaded JWT secretKey = " + secretKey);
-    }
-
     // 토큰 생성
     public String generateToken(String userId) {
         return Jwts.builder()
