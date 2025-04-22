@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
+    // 게시글 단건 조회 메서드
     @GetMapping("/{postSeq}")
-    public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq) {
-        return postService.getPostBySeq(postSeq);
+    public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq, HttpServletRequest request) {
+        return postService.getPostBySeq(postSeq, request);
     }
 
+    // 게시글 다건 조회 메서드
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getPosts(
             @RequestHeader String blogId,
@@ -32,6 +34,7 @@ public class PostController {
         return postService.getPosts(blogId, page, size, category, tag);
     }
 
+    // 고정 게시글 다건 조회 메서드
     @GetMapping("/pinned")
     public ResponseEntity<ApiResponse<?>> getPinnedPosts(
             @RequestHeader String blogId,
@@ -41,6 +44,7 @@ public class PostController {
         return postService.getPinnedPosts(blogId, page, size);
     }
 
+    // 포스팅 메서드
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createPost(
             @RequestBody PostRequestDto requestDto,
@@ -49,6 +53,7 @@ public class PostController {
         return postService.createPost(requestDto, request);
     }
 
+    // 게시글 수정 메서드
     @PutMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> updatePost(
             @PathVariable Long postSeq,
@@ -58,6 +63,7 @@ public class PostController {
         return postService.updatePost(postSeq, requestDto, request);
     }
 
+    // 게시글 삭제 메서드
     @DeleteMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> deletePost(
             @PathVariable Long postSeq,
@@ -66,6 +72,7 @@ public class PostController {
         return postService.deletePost(postSeq, request);
     }
 
+    // 게시글 고정 메서드
     @PostMapping("/{postSeq}/pin")
     public ResponseEntity<ApiResponse<?>> pinPost(
             @PathVariable Long postSeq,
@@ -74,11 +81,38 @@ public class PostController {
         return postService.setPinned(postSeq, request, true);
     }
 
+    // 게시글 고정 해제 메서드
     @PostMapping("/{postSeq}/unpin")
     public ResponseEntity<ApiResponse<?>> unpinPost(
             @PathVariable Long postSeq,
             HttpServletRequest request
     ) {
         return postService.setPinned(postSeq, request, false);
+    }
+
+    // 보관 게시글 메서드
+    @GetMapping("/archived")
+    public ResponseEntity<ApiResponse<?>> getArchivedPosts(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return postService.getArchivedPosts(request, page, size);
+    }
+
+    @PostMapping("/{postSeq}/archive")
+    public ResponseEntity<ApiResponse<?>> archivePost(
+            @PathVariable Long postSeq,
+            HttpServletRequest request
+    ) {
+        return postService.setArchived(postSeq, request, true);
+    }
+
+    @PostMapping("/{postSeq}/unarchive")
+    public ResponseEntity<ApiResponse<?>> unarchivePost(
+            @PathVariable Long postSeq,
+            HttpServletRequest request
+    ) {
+        return postService.setArchived(postSeq, request, false);
     }
 }

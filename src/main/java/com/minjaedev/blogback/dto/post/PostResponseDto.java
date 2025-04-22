@@ -16,6 +16,7 @@ public class PostResponseDto {
     private final List<String> tags;
     private final LocalDateTime createdAt;
     private final String authorName;
+    private final boolean isArchived;
 
     public PostResponseDto(Post post) {
         this.title = post.getTitle();
@@ -26,5 +27,6 @@ public class PostResponseDto {
                 .collect(Collectors.toList());
         this.createdAt = post.getCreatedAt();
         this.authorName = post.getAuthor().getName();
+        this.isArchived = post.isArchived();
     }
 }

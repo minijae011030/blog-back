@@ -31,10 +31,16 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
 
-    public ResponseEntity<ApiResponse<?>> getPostBySeq(Long postSeq) {
+    public ResponseEntity<ApiResponse<?>> getPostBySeq(Long postSeq, HttpServletRequest request) {
         Post post = postRepository.findById(postSeq)
                 .orElseThrow(() -> new NotFoundException("해당 게시글을 찾을 수 없습니다."));
 
+        if (post.isArchived()) {
+            User user = getAuthenticatedUser(request);
+            if (!post.getAuthor().getId().equals(user.getId())) {
+                throw  new UnauthorizedException("보관 게시글에 접근할 수 없습니다.");
+            }
+        }
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
     }
 
@@ -115,6 +121,29 @@ public class PostService {
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 삭제 완료"));
     }
 
+
+
+    private Category findOrCreateCategory(String name, User user) {
+        return categoryRepository.findByNameAndUser(name, user)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .name(name)
+                        .user(user)
+                        .build()));
+    }
+
+    private List<Tag> resolveTags(List<String> tagNames, User user) {
+        List<Tag> tagList = new ArrayList<>();
+        for (String tagName : tagNames) {
+            Tag tag = tagRepository.findByNameAndUser(tagName, user)
+                    .orElseGet(() -> tagRepository.save(Tag.builder()
+                            .name(tagName)
+                            .user(user)
+                            .build()));
+            tagList.add(tag);
+        }
+        return tagList;
+    }
+
     public ResponseEntity<ApiResponse<?>> setPinned(Long postSeq, HttpServletRequest request, boolean pin) {
         User user = getAuthenticatedUser(request);
         Post post = getUserOwnedPost(postSeq, user);
@@ -123,6 +152,29 @@ public class PostService {
         postRepository.save(post);
 
         return ResponseEntity.ok(ApiResponse.of(200, pin ? "게시글 고정 완료" : "게시글 고정 해제 완료"));
+    }
+
+    public ResponseEntity<ApiResponse<?>> getArchivedPosts( HttpServletRequest request, int page, int size) {
+        User user = getAuthenticatedUser(request);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Post> archivedPage = postRepository.findByAuthorAndIsArchivedTrue(user, pageable);
+        List<PostResponseDto> postDtos = archivedPage.getContent().stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        PostListResponseDto response = new PostListResponseDto((int) archivedPage.getTotalElements(), postDtos);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "보관된 게시글 조회 성공", response));
+    }
+
+    public ResponseEntity<ApiResponse<?>> setArchived(Long postSeq, HttpServletRequest request, boolean archiv) {
+        User user = getAuthenticatedUser(request);
+        Post post = getUserOwnedPost(postSeq, user);
+        post.setArchived(archiv);
+        postRepository.save(post);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, archiv ? "게시글 보관 완료" : "게시글 복원 완료"));
     }
 
     // ========== 유틸 ==========
@@ -152,26 +204,5 @@ public class PostService {
     public User getUserByBlogId(String blogId) {
         return userRepository.findByBlogId(blogId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
-    }
-
-    private Category findOrCreateCategory(String name, User user) {
-        return categoryRepository.findByNameAndUser(name, user)
-                .orElseGet(() -> categoryRepository.save(Category.builder()
-                        .name(name)
-                        .user(user)
-                        .build()));
-    }
-
-    private List<Tag> resolveTags(List<String> tagNames, User user) {
-        List<Tag> tagList = new ArrayList<>();
-        for (String tagName : tagNames) {
-            Tag tag = tagRepository.findByNameAndUser(tagName, user)
-                    .orElseGet(() -> tagRepository.save(Tag.builder()
-                            .name(tagName)
-                            .user(user)
-                            .build()));
-            tagList.add(tag);
-        }
-        return tagList;
     }
 }
