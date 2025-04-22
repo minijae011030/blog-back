@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class AuthUtil {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
+
 
     public User getAuthenticatedUser(HttpServletRequest request) {
         String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
@@ -32,16 +32,5 @@ public class AuthUtil {
     public User getUserByBlogId(String blogId) {
         return userRepository.findByBlogId(blogId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
-    }
-
-    public Post getUserOwnedPost(Long postSeq, User user) {
-        Post post = postRepository.findById(postSeq)
-                .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
-
-        if (!post.getAuthor().getId().equals(user.getId())) {
-            throw new UnauthorizedException("접근 권한이 없습니다.");
-        }
-
-        return post;
     }
 }

@@ -113,7 +113,7 @@ public class PostService {
 
     public ResponseEntity<ApiResponse<?>> updatePost(Long postSeq, PostRequestDto requestDto, HttpServletRequest request) {
         User user = authUtil.getAuthenticatedUser(request);
-        Post post = authUtil.getUserOwnedPost(postSeq, user);
+        Post post = postUtil.getUserOwnedPost(postSeq, user);
         Category category = postUtil.findOrCreateCategory(requestDto.getCategory(), user);
         List<Tag> tagList = postUtil.resolveTags(requestDto.getTags(), user);
 
@@ -128,7 +128,7 @@ public class PostService {
 
     public ResponseEntity<ApiResponse<?>> deletePost(Long postSeq, HttpServletRequest request) {
         User user = authUtil.getAuthenticatedUser(request);
-        Post post = authUtil.getUserOwnedPost(postSeq, user);
+        Post post = postUtil.getUserOwnedPost(postSeq, user);
 
         postRepository.delete(post);
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 삭제 완료"));
@@ -136,7 +136,7 @@ public class PostService {
 
     public ResponseEntity<ApiResponse<?>> setPinned(Long postSeq, HttpServletRequest request, boolean pinned) {
         User user = authUtil.getAuthenticatedUser(request);
-        Post post = authUtil.getUserOwnedPost(postSeq, user);
+        Post post = postUtil.getUserOwnedPost(postSeq, user);
 
         post.setPinned(pinned);
         postRepository.save(post);
@@ -146,7 +146,7 @@ public class PostService {
 
     public ResponseEntity<ApiResponse<?>> setArchived(Long postSeq, HttpServletRequest request, boolean archived) {
         User user = authUtil.getAuthenticatedUser(request);
-        Post post = authUtil.getUserOwnedPost(postSeq, user);
+        Post post = postUtil.getUserOwnedPost(postSeq, user);
         post.setArchived(archived);
         postRepository.save(post);
         return ResponseEntity.ok(
