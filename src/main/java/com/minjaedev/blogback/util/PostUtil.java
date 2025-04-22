@@ -12,6 +12,7 @@ import com.minjaedev.blogback.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -34,14 +35,14 @@ public class PostUtil {
     }
 
     public List<Tag> resolveTags(List<String> tagNames, User user) {
-        return tagNames.stream()
+        return new ArrayList<>(tagNames.stream()
                 .distinct()
                 .map(tagName -> tagRepository.findByNameAndUser(tagName, user)
                         .orElseGet(() -> tagRepository.save(Tag.builder()
                                 .name(tagName)
                                 .user(user)
                                 .build())))
-                .toList();
+                .toList());
     }
 
     public Post getUserOwnedPost(Long postSeq, User user) {

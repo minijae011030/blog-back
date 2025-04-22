@@ -19,6 +19,7 @@ public class PostResponseDto {
     private final String authorName;
     private final boolean isArchived;
     private final int views;
+    private final boolean isPinned;
 
     public PostResponseDto(Post post) {
         this.postSeq = post.getPostSeq();
@@ -32,5 +33,6 @@ public class PostResponseDto {
         this.authorName = post.getAuthor().getName();
         this.isArchived = post.isArchived();
         this.views = post.getViews();
+        this.isPinned = post.isPinned();
     }
 }
