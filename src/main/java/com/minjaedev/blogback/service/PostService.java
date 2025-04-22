@@ -10,6 +10,7 @@ import com.minjaedev.blogback.exception.NotFoundException;
 import com.minjaedev.blogback.exception.UnauthorizedException;
 import com.minjaedev.blogback.repository.*;
 import com.minjaedev.blogback.util.AuthUtil;
+import com.minjaedev.blogback.util.PostUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,7 +28,7 @@ public class PostService {
     private final AuthUtil authUtil;
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
-    private final TagRepository tagRepository;
+    private final PostUtil postUtil;
 
     public ResponseEntity<ApiResponse<?>> getPostBySeq(Long postSeq, HttpServletRequest request) {
         Post post = postRepository.findById(postSeq)
@@ -80,10 +80,24 @@ public class PostService {
         return ResponseEntity.ok(ApiResponse.of(200, "고정 게시글 조회 성공", response));
     }
 
+    public ResponseEntity<ApiResponse<?>> getArchivedPosts( HttpServletRequest request, int page, int size) {
+        User user = authUtil.getAuthenticatedUser(request);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Post> archivedPage = postRepository.findByAuthorAndIsArchivedTrue(user, pageable);
+        List<PostResponseDto> postDtos = archivedPage.getContent().stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        PostListResponseDto response = new PostListResponseDto((int) archivedPage.getTotalElements(), postDtos);
+        return ResponseEntity.ok(
+                ApiResponse.of(200, "보관된 게시글 조회 성공", response));
+    }
+
     public ResponseEntity<ApiResponse<?>> createPost(PostRequestDto requestDto, HttpServletRequest request) {
         User user = authUtil.getAuthenticatedUser(request);
-        Category category = findOrCreateCategory(requestDto.getCategory(), user);
-        List<Tag> tagList = resolveTags(requestDto.getTags(), user);
+        Category category = postUtil.findOrCreateCategory(requestDto.getCategory(), user);
+        List<Tag> tagList = postUtil.resolveTags(requestDto.getTags(), user);
 
         Post newPost = Post.builder()
                 .title(requestDto.getTitle())
@@ -100,8 +114,8 @@ public class PostService {
     public ResponseEntity<ApiResponse<?>> updatePost(Long postSeq, PostRequestDto requestDto, HttpServletRequest request) {
         User user = authUtil.getAuthenticatedUser(request);
         Post post = authUtil.getUserOwnedPost(postSeq, user);
-        Category category = findOrCreateCategory(requestDto.getCategory(), user);
-        List<Tag> tagList = resolveTags(requestDto.getTags(), user);
+        Category category = postUtil.findOrCreateCategory(requestDto.getCategory(), user);
+        List<Tag> tagList = postUtil.resolveTags(requestDto.getTags(), user);
 
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
@@ -120,59 +134,22 @@ public class PostService {
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 삭제 완료"));
     }
 
-
-
-    private Category findOrCreateCategory(String name, User user) {
-        return categoryRepository.findByNameAndUser(name, user)
-                .orElseGet(() -> categoryRepository.save(Category.builder()
-                        .name(name)
-                        .user(user)
-                        .build()));
-    }
-
-    private List<Tag> resolveTags(List<String> tagNames, User user) {
-        List<Tag> tagList = new ArrayList<>();
-        for (String tagName : tagNames) {
-            Tag tag = tagRepository.findByNameAndUser(tagName, user)
-                    .orElseGet(() -> tagRepository.save(Tag.builder()
-                            .name(tagName)
-                            .user(user)
-                            .build()));
-            tagList.add(tag);
-        }
-        return tagList;
-    }
-
-    public ResponseEntity<ApiResponse<?>> setPinned(Long postSeq, HttpServletRequest request, boolean pin) {
+    public ResponseEntity<ApiResponse<?>> setPinned(Long postSeq, HttpServletRequest request, boolean pinned) {
         User user = authUtil.getAuthenticatedUser(request);
         Post post = authUtil.getUserOwnedPost(postSeq, user);
 
-        post.setPinned(pin);
+        post.setPinned(pinned);
         postRepository.save(post);
 
-        return ResponseEntity.ok(ApiResponse.of(200, pin ? "게시글 고정 완료" : "게시글 고정 해제 완료"));
+        return ResponseEntity.ok(ApiResponse.of(200, pinned ? "게시글 고정 완료" : "게시글 고정 해제 완료"));
     }
 
-    public ResponseEntity<ApiResponse<?>> getArchivedPosts( HttpServletRequest request, int page, int size) {
-        User user = authUtil.getAuthenticatedUser(request);
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Page<Post> archivedPage = postRepository.findByAuthorAndIsArchivedTrue(user, pageable);
-        List<PostResponseDto> postDtos = archivedPage.getContent().stream()
-                .map(PostResponseDto::new)
-                .toList();
-
-        PostListResponseDto response = new PostListResponseDto((int) archivedPage.getTotalElements(), postDtos);
-        return ResponseEntity.ok(
-                ApiResponse.of(200, "보관된 게시글 조회 성공", response));
-    }
-
-    public ResponseEntity<ApiResponse<?>> setArchived(Long postSeq, HttpServletRequest request, boolean archiv) {
+    public ResponseEntity<ApiResponse<?>> setArchived(Long postSeq, HttpServletRequest request, boolean archived) {
         User user = authUtil.getAuthenticatedUser(request);
         Post post = authUtil.getUserOwnedPost(postSeq, user);
-        post.setArchived(archiv);
+        post.setArchived(archived);
         postRepository.save(post);
         return ResponseEntity.ok(
-                ApiResponse.of(200, archiv ? "게시글 보관 완료" : "게시글 복원 완료"));
+                ApiResponse.of(200, archived ? "게시글 보관 완료" : "게시글 복원 완료"));
     }
 }
