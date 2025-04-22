@@ -25,7 +25,11 @@ spring:
     serialization:
       fail-on-empty-beans: false  # (LAZY 객체 JSON 직렬화 오류 방지용)
 
-
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - https://localhost:3000
+    - https://your-frontend-domain.com
 
 logging:
   level:

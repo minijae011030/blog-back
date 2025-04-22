@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class PostResponseDto {
+    private final Long postSeq;
     private final String title;
     private final String content;
     private final String category;
@@ -20,6 +21,7 @@ public class PostResponseDto {
     private final int views;
 
     public PostResponseDto(Post post) {
+        this.postSeq = post.getPostSeq();
         this.title = post.getTitle();
         this.content = post.getContent();
         this.category = post.getCategory().getName();
