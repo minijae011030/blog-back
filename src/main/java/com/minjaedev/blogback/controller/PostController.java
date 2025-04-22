@@ -3,6 +3,7 @@ package com.minjaedev.blogback.controller;
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.dto.post.PostRequestDto;
 
+import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final PostRepository postRepository;
 
     // 게시글 단건 조회 메서드
     @GetMapping("/{postSeq}")

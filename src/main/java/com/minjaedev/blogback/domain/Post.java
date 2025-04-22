@@ -49,6 +49,9 @@ public class Post {
     @Column(name = "is_archived", nullable = false)
     private boolean isArchived = false;
 
+    @Column(nullable = false)
+    private int views = 0;
+
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();

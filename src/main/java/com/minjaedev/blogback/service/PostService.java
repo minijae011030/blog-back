@@ -12,6 +12,7 @@ import com.minjaedev.blogback.repository.*;
 import com.minjaedev.blogback.util.AuthUtil;
 import com.minjaedev.blogback.util.PostUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +41,16 @@ public class PostService {
                 throw  new UnauthorizedException("보관 게시글에 접근할 수 없습니다.");
             }
         }
+
+        HttpSession session = request.getSession();
+        String viewKey = "VIEWED_POST_" + postSeq;
+
+        if (session.getAttribute(viewKey) == null) {
+            post.setViews(post.getViews() + 1);
+            postRepository.save(post);
+            session.setAttribute(viewKey, post);
+        }
+
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
     }
 
