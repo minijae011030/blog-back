@@ -71,9 +71,11 @@ public class UserService {
 
         return categoryRepository.findAllByUser(user)
                 .stream()
-                .map(category -> new CategoryResponseDto(
-                        category,
-                        postRepository.countByCategory(category)))
+                .map(category -> {
+                    long count = postRepository.countByCategory(category);
+                    return new CategoryResponseDto(category, (int) count);
+                })
+                .filter(dto -> dto.getPostCount() > 0)
                 .collect(Collectors.toList());
     }
 
