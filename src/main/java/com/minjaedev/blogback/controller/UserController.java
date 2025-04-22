@@ -1,6 +1,7 @@
 package com.minjaedev.blogback.controller;
 
 import com.minjaedev.blogback.common.ApiResponse;
+import com.minjaedev.blogback.dto.user.UserResponseDto;
 import com.minjaedev.blogback.dto.user.UserUpdateRequestDto;
 
 import com.minjaedev.blogback.service.UserService;
@@ -18,7 +19,8 @@ public class UserController {
     @GetMapping("/account")
     public ResponseEntity<ApiResponse<?>> getMyInfo(@RequestHeader String blogId) {
         try {
-            return ResponseEntity.ok(ApiResponse.of(200, "사용자 정보 조회 성공", userService.getUserInfo(blogId)));
+            UserResponseDto userInfo = userService.getUserInfo(blogId);
+            return ResponseEntity.ok(ApiResponse.of(200, "사용자 정보 조회 성공", userInfo));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(ApiResponse.of(404, e.getMessage()));
         }

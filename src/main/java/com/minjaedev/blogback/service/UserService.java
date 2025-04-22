@@ -45,12 +45,12 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 
-    public ResponseEntity<?> getUserInfo(String blogId) {
+    public UserResponseDto getUserInfo(String blogId) {
         User user = getUserByBlogId(blogId);
-        return ResponseEntity.ok(UserResponseDto.of(user));
+        return UserResponseDto.of(user);
     }
 
-    public ResponseEntity<?> updateUserInfo(HttpServletRequest request, UserUpdateRequestDto dto) {
+    public UserResponseDto updateUserInfo(HttpServletRequest request, UserUpdateRequestDto dto) {
         User user = getAuthenticatedUser(request);
 
         if (dto.getName() != null) user.setName(dto.getName());
@@ -61,10 +61,10 @@ public class UserService {
         if (dto.getProfileImage() != null) user.setProfileImage(dto.getProfileImage());
 
         userRepository.save(user);
-        return ResponseEntity.ok(UserResponseDto.of(user));
+        return UserResponseDto.of(user);
     }
 
-    public ResponseEntity<?> getCategoryList(String blogId) {
+    public List<CategoryResponseDto> getCategoryList(String blogId) {
         User user = getUserByBlogId(blogId);
 
         List<CategoryResponseDto> result = categoryRepository.findAllByUser(user)
@@ -74,10 +74,10 @@ public class UserService {
                         postRepository.countByCategory(category)))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(result);
+        return result;
     }
 
-    public ResponseEntity<?> getTagList(String blogId) {
+    public List<TagResponseDto> getTagList(String blogId) {
         User user = getUserByBlogId(blogId);
 
         List<TagResponseDto> result = tagRepository.findAllByUser(user)
@@ -85,6 +85,6 @@ public class UserService {
                 .map(TagResponseDto::new)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(result);
+        return result;
     }
 }

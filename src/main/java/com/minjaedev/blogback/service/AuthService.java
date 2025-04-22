@@ -23,6 +23,10 @@ public class AuthService {
             throw new UnauthorizedException("이미 존재하는 이메일입니다.");
         }
 
+        if (userRepository.existsByBlogId(req.getBlogId())) {
+            throw new UnauthorizedException("이미 사용 중인 블로그 ID입니다.");
+        }
+
         User user = User.builder()
                 .name(req.getName())
                 .email(req.getEmail())

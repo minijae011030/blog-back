@@ -22,7 +22,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> signup(@RequestBody SignupRequestDto request) {
         try {
             authService.signup(request);
-            return ResponseEntity.ok(ApiResponse.of(200, "User registered successfully"));
+            return ResponseEntity.ok(ApiResponse.of(200, "회원가입이 성공적으로 완료되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.of(400, e.getMessage()));
         }
@@ -32,7 +32,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequestDto request) {
         try {
             String token = authService.login(request);
-            return ResponseEntity.ok(ApiResponse.of(200, "login successful", token));
+            return ResponseEntity.ok(ApiResponse.of(200, "로그인이 완료되었습니다.", token));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(ApiResponse.of(401, e.getMessage()));
         }
