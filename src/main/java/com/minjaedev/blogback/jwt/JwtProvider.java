@@ -1,7 +1,7 @@
 package com.minjaedev.blogback.jwt;
 
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +16,6 @@ public class JwtProvider {
 
     @Value("${jwt.expiration}")
     private  long expirationMs;
-    // prefix 제공자
-    @Getter
-    public static final String TOKEN_PREFIX = "Bearer ";
 
     // 토큰 생성
     public String generateToken(String userId) {
@@ -39,14 +36,6 @@ public class JwtProvider {
                 .getSubject();
     }
 
-    // prefix 제거 유틸
-    public String resolveToken(String bearerToken) {
-        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
-            return bearerToken.substring(TOKEN_PREFIX.length());
-        }
-        return null;
-    }
-
     // 토큰 검증 함수
     public boolean validateToken(String token) {
         try {
@@ -55,5 +44,17 @@ public class JwtProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public String resolveTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return null;
     }
 }
