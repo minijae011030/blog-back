@@ -12,7 +12,6 @@ import com.minjaedev.blogback.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -23,6 +22,10 @@ public class PostUtil {
     private final PostRepository postRepository;
 
     public Category findOrCreateCategory(String name, User user) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("카테고리 이름이 비어 있을 수 없습니다.");
+        }
+
         return categoryRepository.findByNameAndUser(name, user)
                 .orElseGet(() -> categoryRepository.save(Category.builder()
                         .name(name)
@@ -31,16 +34,14 @@ public class PostUtil {
     }
 
     public List<Tag> resolveTags(List<String> tagNames, User user) {
-        List<Tag> tagList = new ArrayList<>();
-        for (String tagName : tagNames) {
-            Tag tag = tagRepository.findByNameAndUser(tagName, user)
-                    .orElseGet(() -> tagRepository.save(Tag.builder()
-                            .name(tagName)
-                            .user(user)
-                            .build()));
-            tagList.add(tag);
-        }
-        return tagList;
+        return tagNames.stream()
+                .distinct()
+                .map(tagName -> tagRepository.findByNameAndUser(tagName, user)
+                        .orElseGet(() -> tagRepository.save(Tag.builder()
+                                .name(tagName)
+                                .user(user)
+                                .build())))
+                .toList();
     }
 
     public Post getUserOwnedPost(Long postSeq, User user) {

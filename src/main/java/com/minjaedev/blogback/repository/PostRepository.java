@@ -12,13 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    Optional<Post> findByPostSeq(Long postSeq);
-    Page<Post> findAllByAuthor(User author, Pageable pageable);
-    Page<Post> findAllByAuthorAndCategory(User author, Category category, Pageable pageable);
-    Page<Post> findAllByAuthorAndTags_Name(User author, String tagName, Pageable pageable);
     Page<Post> findByAuthorAndIsPinnedTrue(User user, Pageable pageable);
     Page<Post> findByAuthorAndIsArchivedTrue(User author, Pageable pageable);
-    Page<Post> findByAuthorAndIsArchivedFalse(User author, Pageable pageable);
-
+    Page<Post> findAllByAuthorAndIsArchivedFalse(User author, Pageable pageable);
+    Page<Post> findAllByAuthorAndCategoryAndIsArchivedFalse(User author, Category category, Pageable pageable);
+    Page<Post> findAllByAuthorAndTags_NameAndIsArchivedFalse(User author, String tagName, Pageable pageable);
     int countByCategory(Category category);
 }

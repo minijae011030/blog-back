@@ -6,12 +6,12 @@ import com.minjaedev.blogback.dto.user.TagResponseDto;
 import com.minjaedev.blogback.dto.user.UserResponseDto;
 import com.minjaedev.blogback.dto.user.UserUpdateRequestDto;
 import com.minjaedev.blogback.exception.NotFoundException;
-import com.minjaedev.blogback.exception.UnauthorizedException;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.CategoryRepository;
 import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.TagRepository;
 import com.minjaedev.blogback.repository.UserRepository;
+import com.minjaedev.blogback.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final AuthUtil authUtil;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final CategoryRepository categoryRepository;
@@ -34,14 +35,7 @@ public class UserService {
     }
 
     public User getAuthenticatedUser(HttpServletRequest request) {
-        String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
-        if (token == null || !jwtProvider.validateToken(token)) {
-            throw new UnauthorizedException("유효하지 않은 토큰입니다.");
-        }
-
-        String userId = jwtProvider.getUserIdFromToken(token);
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+        return authUtil.getAuthenticatedUser(request);
     }
 
     public UserResponseDto getUserInfo(String blogId) {

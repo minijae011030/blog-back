@@ -26,9 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final AuthUtil authUtil;
+    private final PostUtil postUtil;
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
-    private final PostUtil postUtil;
 
     public ResponseEntity<ApiResponse<?>> getPostBySeq(Long postSeq, HttpServletRequest request) {
         Post post = postRepository.findById(postSeq)
@@ -45,18 +45,18 @@ public class PostService {
 
     public ResponseEntity<ApiResponse<?>> getPosts(String blogId, int page, int size, String category, String tag) {
         User user = authUtil.getUserByBlogId(blogId);
-
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
         Page<Post> postPage;
 
         if (category != null) {
             Category categoryEntity = categoryRepository.findByNameAndUser(category, user)
                     .orElseThrow(() -> new NotFoundException("해당 카테고리를 찾을 수 없습니다."));
-            postPage = postRepository.findAllByAuthorAndCategory(user, categoryEntity, pageable);
+            postPage = postRepository.findAllByAuthorAndCategoryAndIsArchivedFalse(user, categoryEntity, pageable);
         } else if (tag != null) {
-            postPage = postRepository.findAllByAuthorAndTags_Name(user, tag, pageable);
+            postPage = postRepository.findAllByAuthorAndTags_NameAndIsArchivedFalse(user, tag, pageable);
         } else {
-            postPage = postRepository.findAllByAuthor(user, pageable);
+            postPage = postRepository.findAllByAuthorAndIsArchivedFalse(user, pageable);
         }
 
         List<PostResponseDto> postDtos = postPage.getContent().stream()

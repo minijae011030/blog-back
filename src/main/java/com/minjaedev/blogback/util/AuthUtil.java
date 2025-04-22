@@ -1,11 +1,9 @@
 package com.minjaedev.blogback.util;
 
-import com.minjaedev.blogback.domain.Post;
 import com.minjaedev.blogback.domain.User;
 import com.minjaedev.blogback.exception.NotFoundException;
 import com.minjaedev.blogback.exception.UnauthorizedException;
 import com.minjaedev.blogback.jwt.JwtProvider;
-import com.minjaedev.blogback.repository.PostRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Component;
 public class AuthUtil {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
-
 
     public User getAuthenticatedUser(HttpServletRequest request) {
         String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
