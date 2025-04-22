@@ -14,7 +14,6 @@ import com.minjaedev.blogback.repository.TagRepository;
 import com.minjaedev.blogback.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,24 +66,20 @@ public class UserService {
     public List<CategoryResponseDto> getCategoryList(String blogId) {
         User user = getUserByBlogId(blogId);
 
-        List<CategoryResponseDto> result = categoryRepository.findAllByUser(user)
+        return categoryRepository.findAllByUser(user)
                 .stream()
                 .map(category -> new CategoryResponseDto(
                         category,
                         postRepository.countByCategory(category)))
                 .collect(Collectors.toList());
-
-        return result;
     }
 
     public List<TagResponseDto> getTagList(String blogId) {
         User user = getUserByBlogId(blogId);
 
-        List<TagResponseDto> result = tagRepository.findAllByUser(user)
+        return tagRepository.findAllByUser(user)
                 .stream()
                 .map(TagResponseDto::new)
                 .collect(Collectors.toList());
-
-        return result;
     }
 }
