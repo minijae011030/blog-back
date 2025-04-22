@@ -27,11 +27,13 @@ spring:
 
 
 
-# 로깅 설정 (선택)
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    root: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF
+    org.springframework: WARN
+    com.minjaedev.blogback: DEBUG
 
 jwt:
   secret: ${JWT_SECRET_KEY}
