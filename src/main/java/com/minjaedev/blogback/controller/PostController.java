@@ -3,7 +3,6 @@ package com.minjaedev.blogback.controller;
 import com.minjaedev.blogback.common.ApiResponse;
 import com.minjaedev.blogback.dto.post.PostRequestDto;
 
-
 import com.minjaedev.blogback.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

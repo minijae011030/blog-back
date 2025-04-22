@@ -8,8 +8,8 @@ import com.minjaedev.blogback.dto.post.PostRequestDto;
 import com.minjaedev.blogback.dto.post.PostResponseDto;
 import com.minjaedev.blogback.exception.NotFoundException;
 import com.minjaedev.blogback.exception.UnauthorizedException;
-import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.*;
+import com.minjaedev.blogback.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,8 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
+    private final AuthUtil authUtil;
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
@@ -36,7 +35,7 @@ public class PostService {
                 .orElseThrow(() -> new NotFoundException("해당 게시글을 찾을 수 없습니다."));
 
         if (post.isArchived()) {
-            User user = getAuthenticatedUser(request);
+            User user = authUtil.getAuthenticatedUser(request);
             if (!post.getAuthor().getId().equals(user.getId())) {
                 throw  new UnauthorizedException("보관 게시글에 접근할 수 없습니다.");
             }
@@ -45,7 +44,7 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> getPosts(String blogId, int page, int size, String category, String tag) {
-        User user = getUserByBlogId(blogId);
+        User user = authUtil.getUserByBlogId(blogId);
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> postPage;
@@ -69,7 +68,7 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> getPinnedPosts(String blogId, int page, int size) {
-        User user = getUserByBlogId(blogId);
+        User user = authUtil.getUserByBlogId(blogId);
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Post> pinnedPage = postRepository.findByAuthorAndIsPinnedTrue(user, pageable);
 
@@ -82,7 +81,7 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> createPost(PostRequestDto requestDto, HttpServletRequest request) {
-        User user = getAuthenticatedUser(request);
+        User user = authUtil.getAuthenticatedUser(request);
         Category category = findOrCreateCategory(requestDto.getCategory(), user);
         List<Tag> tagList = resolveTags(requestDto.getTags(), user);
 
@@ -99,8 +98,8 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> updatePost(Long postSeq, PostRequestDto requestDto, HttpServletRequest request) {
-        User user = getAuthenticatedUser(request);
-        Post post = getUserOwnedPost(postSeq, user);
+        User user = authUtil.getAuthenticatedUser(request);
+        Post post = authUtil.getUserOwnedPost(postSeq, user);
         Category category = findOrCreateCategory(requestDto.getCategory(), user);
         List<Tag> tagList = resolveTags(requestDto.getTags(), user);
 
@@ -114,8 +113,8 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> deletePost(Long postSeq, HttpServletRequest request) {
-        User user = getAuthenticatedUser(request);
-        Post post = getUserOwnedPost(postSeq, user);
+        User user = authUtil.getAuthenticatedUser(request);
+        Post post = authUtil.getUserOwnedPost(postSeq, user);
 
         postRepository.delete(post);
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 삭제 완료"));
@@ -145,8 +144,8 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> setPinned(Long postSeq, HttpServletRequest request, boolean pin) {
-        User user = getAuthenticatedUser(request);
-        Post post = getUserOwnedPost(postSeq, user);
+        User user = authUtil.getAuthenticatedUser(request);
+        Post post = authUtil.getUserOwnedPost(postSeq, user);
 
         post.setPinned(pin);
         postRepository.save(post);
@@ -155,7 +154,7 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> getArchivedPosts( HttpServletRequest request, int page, int size) {
-        User user = getAuthenticatedUser(request);
+        User user = authUtil.getAuthenticatedUser(request);
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Post> archivedPage = postRepository.findByAuthorAndIsArchivedTrue(user, pageable);
@@ -169,40 +168,11 @@ public class PostService {
     }
 
     public ResponseEntity<ApiResponse<?>> setArchived(Long postSeq, HttpServletRequest request, boolean archiv) {
-        User user = getAuthenticatedUser(request);
-        Post post = getUserOwnedPost(postSeq, user);
+        User user = authUtil.getAuthenticatedUser(request);
+        Post post = authUtil.getUserOwnedPost(postSeq, user);
         post.setArchived(archiv);
         postRepository.save(post);
         return ResponseEntity.ok(
                 ApiResponse.of(200, archiv ? "게시글 보관 완료" : "게시글 복원 완료"));
-    }
-
-    // ========== 유틸 ==========
-
-    public User getAuthenticatedUser(HttpServletRequest request) {
-        String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
-        if (token == null || !jwtProvider.validateToken(token)) {
-            throw new UnauthorizedException("유효하지 않은 토큰입니다.");
-        }
-
-        String userId = jwtProvider.getUserIdFromToken(token);
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
-    }
-
-    public Post getUserOwnedPost(Long postSeq, User user) {
-        Post post = postRepository.findById(postSeq)
-                .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
-
-        if (!post.getAuthor().getId().equals(user.getId())) {
-            throw new UnauthorizedException("접근 권한이 없습니다.");
-        }
-
-        return post;
-    }
-
-    public User getUserByBlogId(String blogId) {
-        return userRepository.findByBlogId(blogId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
     }
 }
