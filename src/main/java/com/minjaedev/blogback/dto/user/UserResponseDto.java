@@ -12,6 +12,7 @@ public class UserResponseDto {
     private final String instagramId;
     private final String intro;
     private final String profileImage;
+    private final String personalUrl;
 
     public UserResponseDto(User user) {
         this.id = user.getId();
@@ -21,6 +22,7 @@ public class UserResponseDto {
         this.instagramId = user.getInstagramId();
         this.intro = user.getIntro();
         this.profileImage = user.getProfileImage();
+        this.personalUrl = user.getPersonalUrl();
     }
 
     public static UserResponseDto of(User user) {
