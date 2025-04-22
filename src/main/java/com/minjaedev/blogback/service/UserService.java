@@ -5,6 +5,8 @@ import com.minjaedev.blogback.dto.user.CategoryResponseDto;
 import com.minjaedev.blogback.dto.user.TagResponseDto;
 import com.minjaedev.blogback.dto.user.UserResponseDto;
 import com.minjaedev.blogback.dto.user.UserUpdateRequestDto;
+import com.minjaedev.blogback.exception.NotFoundException;
+import com.minjaedev.blogback.exception.UnauthorizedException;
 import com.minjaedev.blogback.jwt.JwtProvider;
 import com.minjaedev.blogback.repository.CategoryRepository;
 import com.minjaedev.blogback.repository.PostRepository;
@@ -29,18 +31,18 @@ public class UserService {
 
     public User getUserByBlogId(String blogId) {
         return userRepository.findByBlogId(blogId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 회원입니다."));
     }
 
     public User getAuthenticatedUser(HttpServletRequest request) {
         String token = jwtProvider.resolveToken(request.getHeader("Authorization"));
         if (token == null || !jwtProvider.validateToken(token)) {
-            throw new RuntimeException("유효하지 않은 토큰입니다.");
+            throw new UnauthorizedException("유효하지 않은 토큰입니다.");
         }
 
         String userId = jwtProvider.getUserIdFromToken(token);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 
     public ResponseEntity<?> getUserInfo(String blogId) {
