@@ -57,6 +57,15 @@ public class UserService {
         return UserResponseDto.of(user);
     }
 
+    public UserResponseDto updateProfileImage(HttpServletRequest request, UserUpdateRequestDto dto) {
+        User user = getAuthenticatedUser(request);
+
+        if (dto.getProfileImage() != null) user.setProfileImage(dto.getProfileImage());
+
+        userRepository.save(user);
+        return UserResponseDto.of(user);
+    }
+
     public List<CategoryResponseDto> getCategoryList(String blogId) {
         User user = getUserByBlogId(blogId);
 

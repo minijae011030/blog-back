@@ -38,6 +38,19 @@ public class UserController {
         }
     }
 
+    @PatchMapping("/update/profileimage")
+    public ResponseEntity<ApiResponse<?>> updateProfileImage(
+            HttpServletRequest request,
+            @RequestBody UserUpdateRequestDto requestDto
+    ) {
+        try {
+            return ResponseEntity.ok(ApiResponse.of(200, "회원 프로필 사진 수정 성공", userService.updateProfileImage(request, requestDto)));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(ApiResponse.of(401, e.getMessage()));
+        }
+    }
+
+
     @GetMapping("/categories")
     public ResponseEntity<ApiResponse<?>> getCategories(@RequestHeader String blogId) {
         try {
