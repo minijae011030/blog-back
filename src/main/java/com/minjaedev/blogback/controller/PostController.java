@@ -116,4 +116,10 @@ public class PostController {
     ) {
         return postService.setArchived(postSeq, request, false);
     }
+
+    // 인기글 조회 메서드
+    @GetMapping("/popular")
+    public ResponseEntity<ApiResponse<?>> getPopularPosts() {
+        return postService.getPopularPosts();
+    }
 }

@@ -105,6 +105,16 @@ public class PostService {
                 ApiResponse.of(200, "보관된 게시글 조회 성공", response));
     }
 
+    public ResponseEntity<ApiResponse<?>> getPopularPosts() {
+        List<Post> posts = postRepository.findTop5ByIsArchivedFalseOrderByViewsDesc();
+
+        List<PostResponseDto> responseDtos = posts.stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.of(200, "인기 게시글 조회 성공", responseDtos));
+    }
+
     public ResponseEntity<ApiResponse<?>> createPost(PostRequestDto requestDto, HttpServletRequest request) {
         User user = authUtil.getAuthenticatedUser(request);
         Category category = postUtil.findOrCreateCategory(requestDto.getCategory(), user);
