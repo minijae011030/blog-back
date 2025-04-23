@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    Page<Post> findByAuthorAndIsPinnedTrue(User user, Pageable pageable);
+    Page<Post> findByAuthorAndIsPinnedTrueAndIsArchivedFalse(User author, Pageable pageable);
     Page<Post> findByAuthorAndIsArchivedTrue(User author, Pageable pageable);
     Page<Post> findAllByAuthorAndIsArchivedFalse(User author, Pageable pageable);
     Page<Post> findAllByAuthorAndCategoryAndIsArchivedFalse(User author, Category category, Pageable pageable);

@@ -81,7 +81,7 @@ public class PostService {
     public ResponseEntity<ApiResponse<?>> getPinnedPosts(String blogId, int page, int size) {
         User user = authUtil.getUserByBlogId(blogId);
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Post> pinnedPage = postRepository.findByAuthorAndIsPinnedTrue(user, pageable);
+        Page<Post> pinnedPage = postRepository.findByAuthorAndIsPinnedTrueAndIsArchivedFalse(user, pageable);
 
         List<PostResponseDto> postDtos = pinnedPage.getContent().stream()
                 .map(PostResponseDto::new)
