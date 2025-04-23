@@ -14,15 +14,12 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private  long expirationMs;
-
     // 토큰 생성
     public String generateToken(String userId) {
         return Jwts.builder()
                 .setSubject(userId) // 토큰 안에 들어갈 내용 (보통 유저 ID)
                 .setIssuedAt(new Date()) // 토큰 발행 시간
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs)) // 만료 시간
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24)) // 만료 시간
                 .signWith(SignatureAlgorithm.HS256, secretKey) // 서명
                 .compact();
     }
