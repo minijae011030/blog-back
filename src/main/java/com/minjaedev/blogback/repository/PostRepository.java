@@ -18,6 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByAuthorAndCategoryAndIsArchivedFalse(User author, Category category, Pageable pageable);
     Page<Post> findAllByAuthorAndTags_NameAndIsArchivedFalse(User author, String tagName, Pageable pageable);
     List<Post> findTop5ByIsArchivedFalseOrderByViewsDesc();
-
+    Page<Post> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+            String titleKeyword, String contentKeyword, Pageable pageable);
     int countByCategory(Category category);
 }

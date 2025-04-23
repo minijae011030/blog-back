@@ -122,4 +122,14 @@ public class PostController {
     public ResponseEntity<ApiResponse<?>> getPopularPosts() {
         return postService.getPopularPosts();
     }
+
+    // 검색 메서드
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<?>> searchPosts(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return postService.searchPosts(keyword, page, size);
+    }
 }

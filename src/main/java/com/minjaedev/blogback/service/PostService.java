@@ -173,4 +173,17 @@ public class PostService {
         return ResponseEntity.ok(
                 ApiResponse.of(200, archived ? "게시글 보관 완료" : "게시글 복원 완료"));
     }
+
+    public ResponseEntity<ApiResponse<?>> searchPosts(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                keyword, keyword, pageable);
+
+        List<PostResponseDto> postDtos = postPage.getContent().stream()
+                .map(PostResponseDto::new)
+                .toList();
+
+        PostListResponseDto response = new PostListResponseDto((int) postPage.getTotalElements(), postDtos);
+        return ResponseEntity.ok(ApiResponse.of(200, "검색 결과", response));
+    }
 }

@@ -35,7 +35,6 @@ public class Post {
     @JoinColumn(name = "category_id")
     private  Category category;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String content;
 
