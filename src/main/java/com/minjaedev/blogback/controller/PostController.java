@@ -17,6 +17,15 @@ public class PostController {
     private final PostService postService;
     private final PostRepository postRepository;
 
+    @GetMapping("/calendar")
+    public ResponseEntity<ApiResponse<?>> getPostDaysByMonth(
+            @RequestHeader String blogId,
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+        return postService.getPostDaysByMonth(blogId, year, month);
+    }
+
     // 게시글 단건 조회 메서드
     @GetMapping("/{postSeq}")
     public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq, HttpServletRequest request) {
@@ -133,12 +142,5 @@ public class PostController {
         return postService.searchPosts(keyword, page, size);
     }
 
-    @GetMapping("/calendar")
-    public ResponseEntity<ApiResponse<?>> getPostDaysByMonth(
-            @RequestHeader String blogId,
-            @RequestParam int year,
-            @RequestParam int month
-    ) {
-        return postService.getPostDaysByMonth(blogId, year, month);
-    }
+
 }
