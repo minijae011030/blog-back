@@ -45,15 +45,6 @@ public class PostService {
             }
         }
 
-        HttpSession session = request.getSession();
-        String viewKey = "VIEWED_POST_" + postSeq;
-
-        if (session.getAttribute(viewKey) == null) {
-            post.setViews(post.getViews() + 1);
-            postRepository.save(post);
-            session.setAttribute(viewKey, post);
-        }
-
         return ResponseEntity.ok(ApiResponse.of(200, "게시글 조회 성공", new PostResponseDto(post)));
     }
 
