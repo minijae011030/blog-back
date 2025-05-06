@@ -27,7 +27,7 @@ public class PostController {
     }
 
     // 게시글 단건 조회 메서드
-    @GetMapping("/{postSeq}")
+    @GetMapping("/{postSeq:[0-9]+}")
     public ResponseEntity<ApiResponse<?>> getPostBySeq(@PathVariable Long postSeq, HttpServletRequest request) {
         return postService.getPostBySeq(postSeq, request);
     }
