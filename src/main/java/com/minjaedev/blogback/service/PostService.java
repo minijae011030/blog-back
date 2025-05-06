@@ -21,6 +21,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -186,4 +189,16 @@ public class PostService {
         PostListResponseDto response = new PostListResponseDto((int) postPage.getTotalElements(), postDtos);
         return ResponseEntity.ok(ApiResponse.of(200, "검색 결과", response));
     }
+
+
+    public ResponseEntity<ApiResponse<?>> getPostDaysByMonth(String blogId, int year, int month) {
+        User user = authUtil.getUserByBlogId(blogId);
+
+        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59);
+
+        List<Integer> days = postRepository.findPostDaysByMonth(user, start, end);
+        return ResponseEntity.ok(ApiResponse.of(200, "해당 월의 작성일 목록 조회 성공", days));
+    }
+
 }

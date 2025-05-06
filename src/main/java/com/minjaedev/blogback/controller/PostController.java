@@ -132,4 +132,13 @@ public class PostController {
     ) {
         return postService.searchPosts(keyword, page, size);
     }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<ApiResponse<?>> getPostDaysByMonth(
+            @RequestHeader String blogId,
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+        return postService.getPostDaysByMonth(blogId, year, month);
+    }
 }
